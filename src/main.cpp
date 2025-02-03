@@ -1,26 +1,50 @@
 #include <Arduino.h>
 #include <list>
+#include <map>
+
 using namespace std;
+#define YELLOW_DIODE 12
+#define GREEN_DIODE 13
+#define BUTTON 14
 
 // put function declarations here:
-int _diode = 13;
-list<int> _list = {_diode, LED_BUILTIN};
+void blink(int);
+std::map<int, int> _startup = {
+  {GREEN_DIODE, OUTPUT}, 
+  {YELLOW_DIODE, OUTPUT}, 
+  {LED_BUILTIN, OUTPUT}, 
+  {BUTTON, INPUT_PULLUP}
+};
 
-void setup() {
-  pinMode(_diode, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
-}
+int buttonState = 0;
 
-void blink(int diode) {
-  digitalWrite(diode, HIGH);
-  delay(1000);
-  digitalWrite(diode, LOW);
-  delay(1000);
-}
-
-void loop() {
-  for (int i : _list) {
-    blink(i);
+void setup()
+{
+  for (auto kv : _startup)
+  {
+    pinMode(kv.first, kv.second);
   }
+
+  Serial.begin(115200);
 }
 
+void blinkMode(int diode, int time, bool high)
+{
+  digitalWrite(diode, high ? HIGH : LOW);
+  delay(time);
+}
+
+void blink(int diode)
+{
+  // Serial.println("Turning on diode: " + String(diode));
+  blinkMode(diode, 250, true);
+  // Serial.println("Turning off diode: " + String(diode));
+  blinkMode(diode, 250, false);
+}
+
+void loop()
+{
+  buttonState = digitalRead(BUTTON);
+  Serial.println("Button state: " + String(buttonState));
+  blink(buttonState == HIGH ? GREEN_DIODE : YELLOW_DIODE);
+}
