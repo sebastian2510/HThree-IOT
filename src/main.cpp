@@ -7,13 +7,19 @@ using namespace std;
 #define GREEN_DIODE 13
 #define BUTTON 14
 #define DEFAULT_DELAY 250
+#define POTENTIOMETER 27
+
 // put function declarations here:
 void blink(int);
+void noDelayBlink();
+void blinkMode(int, int, bool);
+
 std::map<int, int> _startup = {
-  {GREEN_DIODE, OUTPUT}, 
-  {YELLOW_DIODE, OUTPUT}, 
-  {LED_BUILTIN, OUTPUT}, 
-  {BUTTON, INPUT_PULLUP}
+    {GREEN_DIODE, OUTPUT},
+    {YELLOW_DIODE, OUTPUT},
+    {LED_BUILTIN, OUTPUT},
+    {BUTTON, INPUT_PULLUP},
+    {POTENTIOMETER, INPUT}
 };
 
 int buttonState = 0;
@@ -30,7 +36,6 @@ void setup()
 
   lastTick = millis();
   Serial.begin(115200);
-
 }
 
 void blinkMode(int diode, int time, bool high)
@@ -46,12 +51,13 @@ void blink(int diode)
   // Serial.println("Turning off diode: " + String(diode));
   blinkMode(diode, 250, false);
 }
-
-void loop()
+#pragma region noDelayBlink
+void noDelayBlink()
 {
   long int time = millis();
   int lastButtonState = buttonState;
   buttonState = digitalRead(BUTTON);
+
   if (buttonState != lastButtonState)
   {
     digitalWrite(currentDiode, LOW);
@@ -66,6 +72,11 @@ void loop()
   lastTick = time;
   currentPower = currentPower == HIGH ? LOW : HIGH;
   digitalWrite(currentDiode, currentPower);
-  // Serial.println("Button state: " + String(buttonState));
-  // blink(buttonState == HIGH ? GREEN_DIODE : YELLOW_DIODE);
+}
+#pragma endregion
+
+void loop()
+{
+  int potentiometerValue = analogRead(POTENTIOMETER) / 4095.0;
+  blink(potentiometerValue >= 0.5 ? GREEN_DIODE : YELLOW_DIODE);
 }
