@@ -8,6 +8,7 @@ using namespace std;
 #define BUTTON 14
 #define DEFAULT_DELAY 250
 #define POTENTIOMETER 27
+#define POTENTIOMETER_MAX_VALUE 4095.0
 
 // put function declarations here:
 void blink(int);
@@ -44,12 +45,12 @@ void blinkMode(int diode, int time, bool high)
   delay(time);
 }
 
-void blink(int diode)
+void blink(int diode, int delay = DEFAULT_DELAY)
 {
   // Serial.println("Turning on diode: " + String(diode));
-  blinkMode(diode, 250, true);
+  blinkMode(diode, delay, true);
   // Serial.println("Turning off diode: " + String(diode));
-  blinkMode(diode, 250, false);
+  blinkMode(diode, delay, false);
 }
 #pragma region noDelayBlink
 void noDelayBlink()
@@ -74,9 +75,10 @@ void noDelayBlink()
   digitalWrite(currentDiode, currentPower);
 }
 #pragma endregion
-
+int defaultDiode = GREEN_DIODE;
 void loop()
 {
-  int potentiometerValue = analogRead(POTENTIOMETER) / 4095.0;
-  blink(potentiometerValue >= 0.5 ? GREEN_DIODE : YELLOW_DIODE);
+  float potentiometerValue = analogRead(POTENTIOMETER) / POTENTIOMETER_MAX_VALUE;
+  Serial.println("Potentiometer value: " + String(potentiometerValue * 1000));
+  blink(potentiometerValue >= 0.5 ? GREEN_DIODE : YELLOW_DIODE, potentiometerValue * 1000);
 }
